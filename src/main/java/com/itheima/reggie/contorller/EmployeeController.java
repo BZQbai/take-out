@@ -6,13 +6,16 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.itheima.reggie.common.R;
 import com.itheima.reggie.domain.Employee;
 import com.itheima.reggie.service.EmployeeService;
+import com.sun.imageio.plugins.common.I18N;
 import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.DigestUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.swing.plaf.basic.BasicButtonUI;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 
@@ -125,11 +128,56 @@ public class EmployeeController {
      * @return
      */
     @GetMapping("/page")
-    public R<Employee> queryPage(Integer page ,Integer pageSize){
+    public R<Page<Employee>> queryPage(Integer page , Integer pageSize,String name){
         //创建分页对象
-        IPage<Employee> pg = new Page<>(page, pageSize);
+        Page<Employee> pg = new Page<>(page, pageSize);
+        //创建条件查询对象
+        LambdaQueryWrapper<Employee> wrapper = new LambdaQueryWrapper<>();
+        wrapper.like(name != null, Employee::getName, name);
+        //执行查询
+        employeeService.page(pg, wrapper);
+        return R.success(pg);
+    }
 
-        return null;
+    /**
+     * 根据Id查询用户
+     * @param id
+     * @return
+     */
+    @GetMapping("/{id}")
+    public R<Employee> getById(@PathVariable("id") Long id){
+        /**
+         * 编辑框的数据回显，通过id查询数据库，然后将数据返回给页面
+         */
+        //1.根据Id进行查询
+        Employee employee = employeeService.getById(id);
+        if (employee != null) {
+            return R.success(employee);
+        }
+
+        return R.error("未查询到该数据");
+
+    }
+
+    /**
+     * 根据id修改用户信息
+     * @param request
+     * @param employee
+     * @return
+     */
+    @PutMapping
+    public R<String> updateEmployee(HttpServletRequest request,@RequestBody Employee employee){
+        //获取当前时间
+        employee.setUpdateTime(LocalDateTime.now());
+        //获取当前登录的用户id
+        String uId = (String) request.getSession().getAttribute("employee");
+        employee.setUpdateUser(Long.parseLong(uId));
+
+        boolean save = employeeService.updateById(employee);
+        if (save){
+            return R.success("修改成功");
+        }
+        return R.error("修改失败");
     }
 
 }
