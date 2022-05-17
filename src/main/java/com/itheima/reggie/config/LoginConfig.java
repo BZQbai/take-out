@@ -1,6 +1,7 @@
 package com.itheima.reggie.config;
 
 import com.alibaba.fastjson.JSON;
+import com.itheima.reggie.common.BaseContext;
 import com.itheima.reggie.common.R;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.AntPathMatcher;
@@ -11,7 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-@WebFilter(urlPatterns = "/*")
+@WebFilter("/*")
 @Slf4j
 public class LoginConfig implements Filter {
 
@@ -37,13 +38,14 @@ public class LoginConfig implements Filter {
         }
 
         //判断用户是否登录
-        Object employee = request.getSession().getAttribute("employee");
+        Long employee = (Long) request.getSession().getAttribute("employee");
         if (employee!=null){
+            BaseContext.setId(employee);
             filterChain.doFilter(servletRequest,servletResponse);
             return;
         }
 
-        //相应回为登录的信息
+        //相应回未登录的信息
         HttpServletResponse response = (HttpServletResponse) servletResponse;
         response.getWriter().write(JSON.toJSONString(R.error("NOTLOGIN")));
         return;

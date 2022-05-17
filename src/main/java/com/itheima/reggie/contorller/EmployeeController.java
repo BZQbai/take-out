@@ -97,23 +97,23 @@ public class EmployeeController {
         String password = "123456";
         password = DigestUtils.md5DigestAsHex(password.getBytes(StandardCharsets.UTF_8));
 //        2.根据传入的username,查询数据库，确保没有重复
-        LambdaQueryWrapper<Employee> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Employee::getUsername, employee.getUsername());
-        Employee emp = employeeService.getOne(wrapper);
-        if (emp != null) {
-            return R.error("用户名已存在");
-        }
+//        LambdaQueryWrapper<Employee> wrapper = new LambdaQueryWrapper<>();
+//        wrapper.eq(Employee::getUsername, employee.getUsername());
+//        Employee emp = employeeService.getOne(wrapper);
+//        if (emp != null) {
+//            return R.error("用户名已存在");
+//        }
 
         employee.setPassword(password);
         //获取当前的时间
-        employee.setCreateTime(LocalDateTime.now());
+      //  employee.setCreateTime(LocalDateTime.now());
         //设置更新时间
-        employee.setUpdateTime(LocalDateTime.now());
+      //  employee.setUpdateTime(LocalDateTime.now());
 
         //获取创建人，从session中获取相应的ID
-        Long LoginUserID = (Long) request.getSession().getAttribute("employee");
-        employee.setCreateUser(LoginUserID);
-        employee.setUpdateUser(LoginUserID);
+      //  String LoginUserID = (String) request.getSession().getAttribute("employee");
+       // employee.setCreateUser(Long.valueOf(LoginUserID));
+      //  employee.setUpdateUser(Long.valueOf(LoginUserID));
 
         //将数据添加进数据库
         employeeService.save(employee);
@@ -134,6 +134,8 @@ public class EmployeeController {
         //创建条件查询对象
         LambdaQueryWrapper<Employee> wrapper = new LambdaQueryWrapper<>();
         wrapper.like(name != null, Employee::getName, name);
+        //进行更新时间的排序
+        wrapper.orderByDesc(Employee::getUpdateTime);
         //执行查询
         employeeService.page(pg, wrapper);
         return R.success(pg);
@@ -168,10 +170,10 @@ public class EmployeeController {
     @PutMapping
     public R<String> updateEmployee(HttpServletRequest request,@RequestBody Employee employee){
         //获取当前时间
-        employee.setUpdateTime(LocalDateTime.now());
+       // employee.setUpdateTime(LocalDateTime.now());
         //获取当前登录的用户id
-        String uId = (String) request.getSession().getAttribute("employee");
-        employee.setUpdateUser(Long.parseLong(uId));
+       // String uId = (String) request.getSession().getAttribute("employee");
+       // employee.setUpdateUser(uId);
 
         boolean save = employeeService.updateById(employee);
         if (save){
