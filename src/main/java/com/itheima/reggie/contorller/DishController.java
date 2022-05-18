@@ -15,6 +15,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,6 +48,7 @@ public class DishController {
 
     /**
      * 菜品分页加条件查询
+     *
      * @param page
      * @param pageSize
      * @param name
@@ -60,6 +62,7 @@ public class DishController {
         //添加过滤条件
         LambdaQueryWrapper<Dish> wrapper = new LambdaQueryWrapper<>();
         wrapper.like(name != null, Dish::getName, name);
+        wrapper.orderByDesc(Dish::getUpdateTime);
 
         Page<Dish> page1 = dishService.page(pg, wrapper);
         //将page1对象中的数据拷贝到pgDto,并排除records
@@ -100,9 +103,9 @@ public class DishController {
 
         }*/
 
-        if (page1 == null) {
+      /*  if (page1 == null) {
             return R.error("服务器错误");
-        }
+        }*/
 
         return R.success(pgDto);
     }
@@ -110,6 +113,7 @@ public class DishController {
 
     /**
      * 根据id获取对应的菜品信息
+     *
      * @param id
      * @return
      */
@@ -131,12 +135,18 @@ public class DishController {
         dishDto.setCategoryName(categoryName);
         dishDto.setFlavors(dishFlavors);
 
-        BeanUtils.copyProperties(dish,dishDto);
+        BeanUtils.copyProperties(dish, dishDto);
 
         return R.success(dishDto);
 
     }
 
+    /**
+     * 修改菜品信息
+     *
+     * @param dishDto
+     * @return
+     */
     @PutMapping
     public R<String> editDish(@RequestBody DishDto dishDto) {
 
@@ -145,5 +155,107 @@ public class DishController {
         return R.success("修改成功");
 
     }
+
+    /**
+     * 修改菜品的状态
+     *
+     * @param code
+     * @param ids
+     * @return
+     */
+    @PostMapping("/status/{code}")
+    public R<String> editStatus(@PathVariable("code") Integer code, Long[] ids) {
+       // log.info(String.valueOf(code), ids);
+        //根据id修改数据
+        if (ids == null && ids.length <= 0) {
+            return R.error("修改失败");
+        }
+        for (Long id : ids) {
+            LambdaQueryWrapper<Dish> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(Dish::getId, id);
+
+            Dish dish = new Dish();
+            dish.setStatus(code);
+            boolean flag = dishService.update(dish,wrapper);
+            if (!flag) {
+                return R.error("修改失败");
+            }
+        }
+
+        return R.success("修改成功");
+    }
+
+    /**
+     * 逻辑删除菜品
+     * @param ids
+     * @return
+     */
+    @DeleteMapping
+    public R<String> deleteDish(Long[] ids) {
+       // log.info(String.valueOf(ids));
+
+        if (ids == null && ids.length <= 0) {
+            return R.error("请选择删除的菜品");
+        }
+
+        for (Long id : ids) {
+            boolean flag = dishService.removeById(id);
+            if (!flag) {
+                return R.error("删除失败");
+            }
+        }
+
+        return R.success("删除成功");
+    }
+
+    /**
+     * 查询菜品集合
+     * @param categoryId
+     * @return
+     */
+   /* @GetMapping("/list")
+    public R<List<Dish>> getDishList(Long categoryId,Integer status) {
+        LambdaQueryWrapper<Dish> wrapper = new LambdaQueryWrapper<>();
+        wrapper
+                .eq(Dish::getCategoryId, categoryId)
+                .eq(status!=null, Dish::getStatus, status);
+        List<Dish> list = dishService.list(wrapper);
+        if (list != null && list.size() > 0) {
+            return R.success(list);
+        }
+
+        return R.error("没有菜品");
+    }*/
+    @GetMapping("/list")
+    public R<List<DishDto>> getDishList(Long categoryId,Integer status) {
+        LambdaQueryWrapper<Dish> wrapper = new LambdaQueryWrapper<>();
+        wrapper
+                .eq(Dish::getCategoryId, categoryId)
+                .eq(status!=null, Dish::getStatus, status);
+        List<Dish> list = dishService.list(wrapper);
+        List<DishDto> dishDtoList = list.stream().map((item) -> {
+            DishDto dishDto = new DishDto();
+            BeanUtils.copyProperties(item, dishDto);
+
+            Long categoryId1 = item.getCategoryId();
+            Category category = categoryService.getById(categoryId1);
+            if (category != null) {
+                dishDto.setCategoryName(category.getName());
+
+            }
+            //取出每个菜品的id
+            Long dishId = item.getId();
+            LambdaQueryWrapper<DishFlavor> wrapper1 = new LambdaQueryWrapper<>();
+            wrapper1.eq(DishFlavor::getDishId, dishId);
+
+            List<DishFlavor> dishFlavors = dishFlavorService.list(wrapper1);
+
+            dishDto.setFlavors(dishFlavors);
+            return dishDto;
+        }).collect(Collectors.toList());
+
+        return R.success(dishDtoList);
+    }
+
 
 }

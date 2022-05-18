@@ -14,6 +14,7 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
         metaObject.setValue("updateTime", LocalDateTime.now());
         metaObject.setValue("createUser", BaseContext.getId());
         metaObject.setValue("updateUser", BaseContext.getId());
+       //metaObject.setValue("code", String.valueOf(System.currentTimeMillis()));
     }
 
     @Override

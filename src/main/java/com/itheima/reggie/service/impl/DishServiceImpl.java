@@ -1,5 +1,6 @@
 package com.itheima.reggie.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.itheima.reggie.dao.DishDao;
 import com.itheima.reggie.domain.Dish;
@@ -9,6 +10,7 @@ import com.itheima.reggie.service.DishFlavorService;
 import com.itheima.reggie.service.DishService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import sun.awt.windows.WWindowPeer;
 
 import java.util.List;
 
@@ -20,7 +22,7 @@ public class DishServiceImpl extends ServiceImpl<DishDao, Dish> implements DishS
 
     @Override
     public void saveWithFlavor(DishDto dishDto) {
-        dishDto.setCode(String.valueOf(System.currentTimeMillis()));
+     //   dishDto.setCode(String.valueOf(System.currentTimeMillis()));
         //保存到菜品表
         this.save(dishDto);
         //获取菜品的Id
@@ -41,15 +43,20 @@ public class DishServiceImpl extends ServiceImpl<DishDao, Dish> implements DishS
     public void editDish(DishDto dishDto) {
         this.updateById(dishDto);
 
-        Long dishDtoId = dishDto.getId();
+        Long dishId = dishDto.getId();
+
+        //先删除口味表中的数据
+        LambdaQueryWrapper<DishFlavor> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(DishFlavor::getDishId, dishId);
+        dishFlavorService.remove(wrapper);
 
         List<DishFlavor> flavors = dishDto.getFlavors();
 
         for (DishFlavor flavor : flavors) {
-            flavor.setDishId(dishDtoId);
+            flavor.setDishId(dishId);
         }
 
-        dishFlavorService.updateBatchById(flavors);
+        dishFlavorService.saveBatch(flavors);
 
     }
 }

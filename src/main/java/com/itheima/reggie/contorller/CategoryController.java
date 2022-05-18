@@ -109,11 +109,13 @@ public class CategoryController {
      * @return
      */
     @DeleteMapping()
-    public R<String> deleteById(String id) {
-        boolean flag = categoryService.removeById(id);
+    public R<String> deleteById(Long id) {
+      /*  boolean flag = categoryService.removeById(id);
         if (!flag) {
             return R.error("删除失败");
-        }
+        }*/
+        categoryService.removeCategoryById(id);
+
         return R.success("删除成功");
     }
 
@@ -125,17 +127,28 @@ public class CategoryController {
      */
     @GetMapping("/list")
     public R<List> findCategoryList(Integer type) {
-        //设置查询条件
-        LambdaQueryWrapper<Category> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Category::getType, type);
 
-        List<Category> list = categoryService.list(wrapper);
 
+            //设置查询条件
+            //type 存在时
+            LambdaQueryWrapper<Category> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(type != null, Category::getType, type);
+
+            List<Category> list = categoryService.list(wrapper);
+
+            if (list != null && list.size() > 0) {
+                return R.success(list);
+            }
+            return R.error("未查询到菜品的分类");
+       /* }
+        //type不存在时
+        List<Category> list = categoryService.list();
         if (list != null && list.size() > 0) {
             return R.success(list);
-        }
-        return R.error("未查询到菜品的分类");
+        }*/
+        //return R.error("未查询到菜品的分类");
     }
+
 
 
 }

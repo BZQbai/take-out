@@ -7,8 +7,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
 public interface DishService extends IService<Dish> {
-
+    //保存菜品
     public void saveWithFlavor(DishDto dishDto);
-
+    //编辑菜品
     public void editDish(DishDto dishDto);
+
+
 }

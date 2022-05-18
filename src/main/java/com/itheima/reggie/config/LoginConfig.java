@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.itheima.reggie.common.BaseContext;
 import com.itheima.reggie.common.R;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.util.AntPathMatcher;
 
 import javax.servlet.*;
@@ -28,7 +29,8 @@ public class LoginConfig implements Filter {
                 "/employee/login",
                 "/employee/logout",
                 "/backend/**",
-                "/front/**"
+                "/front/**",
+                "/user/login"
         };
         for (String s : url) {
             if (PATH_MATCHER.match(s, requestURI)) {
@@ -42,6 +44,14 @@ public class LoginConfig implements Filter {
         if (employee!=null){
             BaseContext.setId(employee);
             filterChain.doFilter(servletRequest,servletResponse);
+            return;
+        }
+
+        //判断手机用户是否登录
+        Long userId = (Long) request.getSession().getAttribute("userId");
+        if (userId!=null) {
+            BaseContext.setId(userId);
+            filterChain.doFilter(servletRequest, servletResponse);
             return;
         }
 
