@@ -44,4 +44,12 @@ public class UserController {
 
         return R.success("登录成功");
     }
+
+    @PostMapping("/loginout")
+    public R<String> loginOut(HttpServletRequest request) {
+        request.getSession().removeAttribute("userId");
+        return R.success("退出成功");
+    }
+
+
 }
