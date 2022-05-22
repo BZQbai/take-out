@@ -13,4 +13,15 @@ function loginoutApi() {
   })
 }
 
+function getMessage(data) {
+   return $axios({
+        'url': '/user/getCode',
+        'method': 'post',
+        data
+    })
+}
+
+
+
+
   

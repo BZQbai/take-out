@@ -11,11 +11,14 @@ import com.itheima.reggie.service.OrdersDetailService;
 import com.itheima.reggie.service.OrdersService;
 import com.itheima.reggie.service.ShoppingCartService;
 import com.sun.org.apache.bcel.internal.generic.LADD;
+import com.sun.org.apache.xpath.internal.operations.Or;
 import com.sun.xml.internal.stream.StaxErrorReporter;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.HttpMediaTypeException;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -50,15 +53,18 @@ public class OrdersController {
 
     /**
      * 订单分页
-     *
      * @param page
      * @param pageSize
      * @return
      */
     @GetMapping("/userPage")
-    public R<Page<Orders>> ordersPage(Integer page, Integer pageSize) {
+    public R<Page<Orders>> ordersPage(Integer page, Integer pageSize, HttpServletRequest request) {
         Page<Orders> pg = new Page<>(page, pageSize);
-        ordersService.page(pg);
+        Long userId = (Long) request.getSession().getAttribute("userId");
+        LambdaQueryWrapper<Orders> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Orders::getUserId, userId);
+        wrapper.orderByDesc(Orders::getOrderTime);
+        ordersService.page(pg,wrapper);
         return R.success(pg);
     }
 
@@ -76,6 +82,7 @@ public class OrdersController {
         LambdaQueryWrapper<Orders> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(number != null, Orders::getId, number);
         wrapper.between(beginTime != null, Orders::getCheckoutTime, beginTime, endTime);
+        wrapper.orderByDesc(Orders::getOrderTime);
 
         ordersService.page(pg, wrapper);
         return R.success(pg);

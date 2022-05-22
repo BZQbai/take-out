@@ -68,6 +68,7 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersDao, Orders> implements
         long orderId = IdWorker.getId();
 
         //组建订单明细表
+        //价格
         AtomicInteger amount = new AtomicInteger(0);
 
 

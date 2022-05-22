@@ -1,5 +1,8 @@
 server:
   port: 8080
+  servlet:
+    session:
+      timeout: 60
 spring:
   application:
     name: reggie_take_out
@@ -20,5 +23,6 @@ mybatis-plus:
       id-type: assign_id
 reggie:
   path: D:\img\
+
 
 

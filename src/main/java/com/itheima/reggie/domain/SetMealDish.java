@@ -44,6 +44,9 @@ public class SetMealDish implements Serializable {
     //排序
     private Integer sort;
 
+    @TableField(select = false, exist = false)
+    private String image;
+
 
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;

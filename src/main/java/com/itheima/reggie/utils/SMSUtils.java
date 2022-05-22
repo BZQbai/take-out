@@ -32,13 +32,15 @@ public class SMSUtils {
 			SendSmsResponse response = client.getAcsResponse(request);
 			System.out.println("短信发送成功");
             System.out.println(response.getMessage());
+			//return response.getMessage();
 		}catch (ClientException e) {
 			e.printStackTrace();
+			//return null;
 		}
 	}
 
-    public static void main(String[] args) {
-        sendMessage("手机号码","1234");
-    }
+   /* public static void main(String[] args) {
+        sendMessage("18382844583","1234");
+    }*/
 
 }

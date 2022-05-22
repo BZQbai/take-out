@@ -30,7 +30,8 @@ public class LoginConfig implements Filter {
                 "/employee/logout",
                 "/backend/**",
                 "/front/**",
-                "/user/login"
+                "/user/login",
+                "/user/getCode"
         };
         for (String s : url) {
             if (PATH_MATCHER.match(s, requestURI)) {

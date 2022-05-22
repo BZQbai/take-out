@@ -5,20 +5,24 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.itheima.reggie.common.R;
 import com.itheima.reggie.dao.SetMealDishDao;
 import com.itheima.reggie.domain.Category;
+import com.itheima.reggie.domain.Dish;
 import com.itheima.reggie.domain.SetMealDish;
 import com.itheima.reggie.domain.Setmeal;
 import com.itheima.reggie.dto.SetMealDto;
 import com.itheima.reggie.exception.BusinessException;
 import com.itheima.reggie.service.CategoryService;
+import com.itheima.reggie.service.DishService;
 import com.itheima.reggie.service.SetMealDishService;
 import com.itheima.reggie.service.SetMealService;
 import org.apache.ibatis.annotations.Delete;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.awt.print.Pageable;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,6 +37,9 @@ public class SetMealController {
 
     @Autowired
     private SetMealDishService setMealDishService;
+
+    @Autowired
+    private DishService dishService;
 
     /**
      * 添加套餐
@@ -169,11 +176,20 @@ public class SetMealController {
 
     }
 
+
     @DeleteMapping
+    @Transactional
     public R<String> deletedSetMeal(Long[] ids) {
         if (ids == null && ids.length <= 0) {
             throw new BusinessException("请选择要删除的套餐");
         }
+        LambdaQueryWrapper<Setmeal> lqw = new LambdaQueryWrapper<>();
+        lqw.in(Setmeal::getId, ids).eq(Setmeal::getStatus, 1);
+        int count = setMealService.count(lqw);
+        if (count > 0) {
+            return R.error("套餐售卖中，不能删除");
+        }
+
         for (Long id : ids) {
             LambdaQueryWrapper<Setmeal> wrapper = new LambdaQueryWrapper<>();
             wrapper.eq(Setmeal::getId, id);
@@ -185,7 +201,6 @@ public class SetMealController {
             if (list == null && list.size() <= 0) {
                 setMealService.remove(wrapper);
             }
-
             //如果存在菜品信息，也一起删除
             setMealDishService.remove(queryWrapper);
             setMealService.remove(wrapper);
@@ -207,6 +222,56 @@ public class SetMealController {
         }
         return R.success(list);
 
+    }
+
+    /**
+     * 展示套餐的信息
+     * @param setMealId
+     * @return
+     */
+    @GetMapping("/dish/{setMealId}")
+    public R<List<SetMealDish>> getSetMealDtoList(@PathVariable("setMealId") Long setMealId) {
+
+        //获取套餐的信息
+       // Setmeal setmeal = setMealService.getById(setMealId);
+        //根据套餐的id,获取套餐内的菜品信息
+        LambdaQueryWrapper<SetMealDish> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(SetMealDish::getSetmealId, setMealId);
+        List<SetMealDish> list = setMealDishService.list(wrapper);
+        //获取每个菜品的图片
+        List<SetMealDish> collect = list.stream().map((item) -> {
+            Long dishId = item.getDishId();
+            Dish dish = dishService.getById(dishId);
+            String image = dish.getImage();
+            item.setImage(image);
+            return item;
+        }).collect(Collectors.toList());
+
+
+        //获取每个菜品的图片
+        /*List<SetMealDish> collect = list.stream().map((item) -> {
+            LambdaQueryWrapper<SetMealDish> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.groupBy(SetMealDish::getDishId).eq(SetMealDish::getDishId,item.getDishId());
+            SetMealDish setMealDish = new SetMealDish();
+            BeanUtils.copyProperties(list, setMealDish);
+            Long dishId = item.getDishId();
+            Dish dish = dishService.getById(dishId);
+            String image = dish.getImage();
+            setMealDish.setImage(image);
+            setMealDish.setName(dish.getName());
+            int count = setMealDishService.count(queryWrapper);
+            setMealDish.setCopies(count);
+            setMealDish.setPrice(BigDecimal.valueOf(count).multiply(dish.getPrice()));
+            count = 0;
+            return setMealDish;
+        }).collect(Collectors.toList());*/
+
+
+//        SetMealDto setMealDto = new SetMealDto();
+//        BeanUtils.copyProperties(setmeal, setMealDto);
+//        setMealDto.setSetmealDishes(list);
+
+        return R.success(collect);
     }
 
 }

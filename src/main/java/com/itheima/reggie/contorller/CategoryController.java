@@ -69,7 +69,9 @@ public class CategoryController {
         //增加排序
         LambdaQueryWrapper<Category> wrapper = new LambdaQueryWrapper<>();
 
-        wrapper.orderByAsc(Category::getSort);
+        wrapper
+                .orderByAsc(Category::getSort)
+                .orderByDesc(Category::getUpdateTime);
         //查询分页
         Page<Category> page1 = categoryService.page(pg, wrapper);
         if (page1.getRecords().size() <= 0) {

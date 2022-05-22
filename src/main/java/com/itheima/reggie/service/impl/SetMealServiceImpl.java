@@ -61,4 +61,9 @@ public class SetMealServiceImpl extends ServiceImpl<SetMealDao, Setmeal> impleme
         setMealDishService.saveBatch(setmealDishes);
 
     }
+
+    @Override
+    public void deleteSetMeal(List<Long> ids) {
+
+    }
 }

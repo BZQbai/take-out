@@ -15,6 +15,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -197,6 +198,7 @@ public class DishController {
         if (ids == null && ids.length <= 0) {
             return R.error("请选择删除的菜品");
         }
+
 
         for (Long id : ids) {
             boolean flag = dishService.removeById(id);
