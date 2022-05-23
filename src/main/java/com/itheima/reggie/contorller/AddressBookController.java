@@ -118,4 +118,15 @@ public class AddressBookController {
         return R.success("修改成功");
     }
 
+    @DeleteMapping
+    public R<String> deleteAddress(Long ids) {
+        log.info(String.valueOf(ids));
+        Boolean flag = addressBookService.deleteAddressById(ids);
+        if (!flag) {
+            return R.error("该地址关联有订单信息，不能删除！");
+        }
+
+        return R.success("删除地址成功");
+    }
+
 }

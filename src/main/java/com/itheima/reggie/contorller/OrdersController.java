@@ -13,12 +13,16 @@ import com.itheima.reggie.service.ShoppingCartService;
 import com.sun.org.apache.bcel.internal.generic.LADD;
 import com.sun.org.apache.xpath.internal.operations.Or;
 import com.sun.xml.internal.stream.StaxErrorReporter;
+import org.apache.commons.io.input.ReaderInputStream;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.HttpMediaTypeException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.io.Reader;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -60,7 +64,8 @@ public class OrdersController {
     @GetMapping("/userPage")
     public R<Page<Orders>> ordersPage(Integer page, Integer pageSize, HttpServletRequest request) {
         Page<Orders> pg = new Page<>(page, pageSize);
-        Long userId = (Long) request.getSession().getAttribute("userId");
+       // Long userId = (Long) request.getSession().getAttribute("userId");
+        Long userId = BaseContext.getId();
         LambdaQueryWrapper<Orders> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Orders::getUserId, userId);
         wrapper.orderByDesc(Orders::getOrderTime);
@@ -116,6 +121,8 @@ public class OrdersController {
 //        wrapper.eq(Orders::getNumber, ordersId);
 //        Orders orders1 = ordersService.getById(ordersId);
 //        orders1.setStatus(2);
+
+
 
         //通过获取订单的信息
         LambdaQueryWrapper<OrderDetail> wrapper = new LambdaQueryWrapper<>();

@@ -70,7 +70,7 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersDao, Orders> implements
         //组建订单明细表
         //价格
         AtomicInteger amount = new AtomicInteger(0);
-
+        // int amount = 0;
 
         List<OrderDetail> orderDetails = shoppingCartList.stream().map((item) -> {
             OrderDetail orderDetail = new OrderDetail();
@@ -81,11 +81,11 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersDao, Orders> implements
             orderDetail.setSetmealId(item.getSetmealId());
             orderDetail.setName(item.getName());
             orderDetail.setImage(item.getImage());
+            // orderDetail.setAmount(item.getAmount().multiply(BigDecimal.valueOf(item.getNumber())));
             orderDetail.setAmount(item.getAmount());
             amount.addAndGet(item.getAmount().multiply(new BigDecimal(item.getNumber())).intValue());
             return orderDetail;
         }).collect(Collectors.toList());
-
 
 
         //组建订单表

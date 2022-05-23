@@ -63,17 +63,10 @@ public class CategoryController {
      */
     @RequestMapping("/page")
 //    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    public R<Page<Category>> getPage(Integer page, Integer pageSize) {
-        //创建分页对象
-        Page<Category> pg = new Page<>(page, pageSize);
-        //增加排序
-        LambdaQueryWrapper<Category> wrapper = new LambdaQueryWrapper<>();
+    public R<Page<Category>> getPage(Integer page, Integer pageSize, String name) {
 
-        wrapper
-                .orderByAsc(Category::getSort)
-                .orderByDesc(Category::getUpdateTime);
-        //查询分页
-        Page<Category> page1 = categoryService.page(pg, wrapper);
+        Page<Category> page1 = categoryService.getPage(page, pageSize, name);
+
         if (page1.getRecords().size() <= 0) {
             return R.error("未查询到数据");
         }
@@ -84,12 +77,11 @@ public class CategoryController {
     /**
      * 修改菜品分类的信息
      *
-     * @param request
      * @param category
      * @return
      */
     @PutMapping
-    public R<String> editCategory(HttpServletRequest request, @RequestBody Category category) {
+    public R<String> editCategory(@RequestBody Category category) {
         //获取当前时间
         //category.setUpdateTime(LocalDateTime.now());
         //获取当前的操作者
@@ -128,20 +120,18 @@ public class CategoryController {
      * @return
      */
     @GetMapping("/list")
-    public R<List> findCategoryList(Integer type) {
+    public R<List<Category>> findCategoryList(Integer type) {
+        //设置查询条件
+        //type 存在时
+        LambdaQueryWrapper<Category> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(type != null, Category::getType, type);
 
+        List<Category> list = categoryService.list(wrapper);
 
-            //设置查询条件
-            //type 存在时
-            LambdaQueryWrapper<Category> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(type != null, Category::getType, type);
-
-            List<Category> list = categoryService.list(wrapper);
-
-            if (list != null && list.size() > 0) {
-                return R.success(list);
-            }
-            return R.error("未查询到菜品的分类");
+        if (list != null && list.size() > 0) {
+            return R.success(list);
+        }
+        return R.error("未查询到菜品的分类");
        /* }
         //type不存在时
         List<Category> list = categoryService.list();
@@ -150,7 +140,6 @@ public class CategoryController {
         }*/
         //return R.error("未查询到菜品的分类");
     }
-
 
 
 }
