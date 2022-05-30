@@ -3,6 +3,7 @@ package com.itheima.reggie.config;
 import com.alibaba.fastjson.JSON;
 import com.itheima.reggie.common.BaseContext;
 import com.itheima.reggie.common.R;
+import com.itheima.reggie.utils.Message;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.AntPathMatcher;
@@ -49,7 +50,7 @@ public class LoginConfig implements Filter {
         }
 
         //判断手机用户是否登录
-        Long userId = (Long) request.getSession().getAttribute("userId");
+        Long userId = (Long) request.getSession().getAttribute(Message.USER_ID);
         if (userId!=null) {
             BaseContext.setId(userId);
             filterChain.doFilter(servletRequest, servletResponse);

@@ -17,6 +17,9 @@ import com.itheima.reggie.service.SetMealService;
 import org.apache.ibatis.annotations.Delete;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -41,6 +44,9 @@ public class SetMealController {
     @Autowired
     private DishService dishService;
 
+    @Autowired
+    private CacheManager cacheManager;
+
     /**
      * 添加套餐
      *
@@ -48,6 +54,7 @@ public class SetMealController {
      * @return
      */
     @PostMapping
+    @CacheEvict(value = "setMeal",allEntries = true)
     public R<String> saveSetMealDish(@RequestBody SetMealDto setMealDto) {
         setMealService.saveSetMeal(setMealDto);
 
@@ -143,6 +150,7 @@ public class SetMealController {
      * @return
      */
     @PutMapping
+    @CacheEvict(value = "setMeal",allEntries = true)
     public R<String> editSetMeal(@RequestBody SetMealDto setMealDto) {
         setMealService.editSetMealMessage(setMealDto);
         return R.success("修改成功");
@@ -156,6 +164,7 @@ public class SetMealController {
      * @return
      */
     @PostMapping("/status/{status}")
+    @CacheEvict(value = "setMeal",allEntries = true)
     public R<String> editStatus(@PathVariable("status") int status, Long[] ids) {
         if (ids == null && ids.length <= 0) {
             throw new BusinessException("请选择要修改的套餐");
@@ -179,6 +188,7 @@ public class SetMealController {
 
     @DeleteMapping
     @Transactional
+    @CacheEvict(value = "setMeal",allEntries = true)
     public R<String> deletedSetMeal(Long[] ids) {
         if (ids == null && ids.length <= 0) {
             throw new BusinessException("请选择要删除的套餐");
@@ -210,12 +220,22 @@ public class SetMealController {
         return R.success("删除成功");
     }
 
+    /**
+     * user查询套餐的信息
+     * @param setmeal
+     * @return
+     */
     @GetMapping("/list")
-    public R<List<Setmeal>> getSetMealList(Long categoryId, Integer status) {
+    @Cacheable(value = "setMeal",key = "#setmeal.categoryId+'_'+#setmeal.status")
+    public R<List<Setmeal>> getSetMealList(Setmeal setmeal) {
+        //检查参数
+        if (setmeal == null) {
+            return R.error("请检查参数！");
+        }
         LambdaQueryWrapper<Setmeal> wrapper = new LambdaQueryWrapper<>();
         wrapper
-                .eq(Setmeal::getCategoryId, categoryId)
-                .eq(status != null, Setmeal::getStatus, status);
+                .eq(Setmeal::getCategoryId, setmeal.getCategoryId())
+                .eq(setmeal.getStatus() != null, Setmeal::getStatus, setmeal.getStatus());
         List<Setmeal> list = setMealService.list(wrapper);
         if (list == null && list.size() <= 0) {
             return R.error("未查询到数据");
@@ -230,8 +250,12 @@ public class SetMealController {
      * @return
      */
     @GetMapping("/dish/{setMealId}")
+    @Cacheable(value = "setMeal",key = "'setMealDish:'+#setMealId")
     public R<List<SetMealDish>> getSetMealDtoList(@PathVariable("setMealId") Long setMealId) {
-
+        //检查参数
+        if (setMealId == null) {
+            return R.error("请检查参数！");
+        }
         //获取套餐的信息
        // Setmeal setmeal = setMealService.getById(setMealId);
         //根据套餐的id,获取套餐内的菜品信息

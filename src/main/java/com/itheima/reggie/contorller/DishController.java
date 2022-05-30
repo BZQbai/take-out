@@ -199,7 +199,6 @@ public class DishController {
             return R.error("请选择删除的菜品");
         }
 
-
         for (Long id : ids) {
             boolean flag = dishService.removeById(id);
             if (!flag) {
@@ -212,7 +211,7 @@ public class DishController {
 
     /**
      * 查询菜品集合
-     * @param categoryId
+     * @param dish
      * @return
      */
    /* @GetMapping("/list")
@@ -229,34 +228,8 @@ public class DishController {
         return R.error("没有菜品");
     }*/
     @GetMapping("/list")
-    public R<List<DishDto>> getDishList(Long categoryId,Integer status) {
-        LambdaQueryWrapper<Dish> wrapper = new LambdaQueryWrapper<>();
-        wrapper
-                .eq(Dish::getCategoryId, categoryId)
-                .eq(status!=null, Dish::getStatus, status);
-        List<Dish> list = dishService.list(wrapper);
-        List<DishDto> dishDtoList = list.stream().map((item) -> {
-            DishDto dishDto = new DishDto();
-            BeanUtils.copyProperties(item, dishDto);
-
-            Long categoryId1 = item.getCategoryId();
-            Category category = categoryService.getById(categoryId1);
-            if (category != null) {
-                dishDto.setCategoryName(category.getName());
-
-            }
-            //取出每个菜品的id
-            Long dishId = item.getId();
-            LambdaQueryWrapper<DishFlavor> wrapper1 = new LambdaQueryWrapper<>();
-            wrapper1.eq(DishFlavor::getDishId, dishId);
-
-            List<DishFlavor> dishFlavors = dishFlavorService.list(wrapper1);
-
-            dishDto.setFlavors(dishFlavors);
-            return dishDto;
-        }).collect(Collectors.toList());
-
-        return R.success(dishDtoList);
+    public R<List<DishDto>> getDishList(Dish dish) {
+        return R.success(dishService.getDishList(dish));
     }
 
 
