@@ -10,6 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @SpringBootTest
 public class TestEmployee {
 
@@ -29,5 +32,25 @@ public class TestEmployee {
         Integer integer = ValidateCodeUtils.generateValidateCode(4);
         System.out.println(integer);
 
+    }
+
+
+    @Test
+    public void containsNearbyDuplicate() {
+        int[] nums = {1, 0, 1, 4, 1};
+        int k = 1;
+        Set<Integer> set = new HashSet<>();
+        for(int i = 0; i < nums.length; i++) {
+            if(set.add(nums[i])) {
+                if(set.size() > k) {
+                    set.remove(nums[i - k]);
+                }
+            } else {
+               // return true;
+                System.out.println(1);
+            }
+        }
+        //return false;
+        System.out.println(2);
     }
 }

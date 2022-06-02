@@ -8,11 +8,13 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @SpringBootApplication
 @Slf4j
 @MapperScan("com.itheima.reggie.dao")
+//@ComponentScan(basePackages = {"com.itheima.reggie.dao"})
 @ServletComponentScan
 @EnableTransactionManagement
 @EnableCaching
