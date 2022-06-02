@@ -32,7 +32,11 @@ public class LoginConfig implements Filter {
                 "/backend/**",
                 "/front/**",
                 "/user/login",
-                "/user/getCode"
+                "/user/getCode",
+                "/doc.html",
+                "/webjars/**",
+                "/swagger-resources",
+                "/v2/api-docs"
         };
         for (String s : url) {
             if (PATH_MATCHER.match(s, requestURI)) {
